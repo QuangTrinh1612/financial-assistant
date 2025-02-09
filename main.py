@@ -40,7 +40,7 @@ def calculate_MACD(ticker):
     return f'{MACD[-1]}, {signal[-1]}, {MACD_histogram[-1]}'
 
 def plot_stock_price(ticker):
-    data = yf.Ticker(ticker).history(period='1y').Close
+    data = yf.Ticker(ticker).history(period='1y')
     plt.figure(figsize=(10,5))
     plt.plot(data.index, data.Close)
     plt.title(f"{ticker} Stock Price Over Last Year")
@@ -50,97 +50,115 @@ def plot_stock_price(ticker):
     plt.savefig('stock.png')
     plt.close()
 
-functions = [
+tools = [
     {
-        "name": "get_stock_price",
-        "description": "Gets the latest stock price given the ticker symbol of a company.",
-        "parameters": {
-            "type": "object",
-            "property": {
-                "ticker": {
-                    "type": "string",
-                    "description": "The stock ticker symbol for a company (for example APPL for Apple)"
-                }
-            },
-            "required": ["ticker"]
-        }
-    },
-    {
-        "name": "calculate_SMA",
-        "description": "Calculate the simple moving average for a given stock ticker and a window",
-        "parameters": {
-            "type": "object",
-            "property": {
-                "ticker": {
-                    "type": "string",
-                    "description": "The stock ticker symbol for a company (for example APPL for Apple)"
+        "type": "function",
+        "function": {
+            "name": "get_stock_price",
+            "description": "Gets the latest stock price given the ticker symbol of a company.",
+            "parameters": {
+                "type": "object",
+                "property": {
+                    "ticker": {
+                        "type": "string",
+                        "description": "The stock ticker symbol for a company (for example APPL for Apple)"
+                    }
                 },
-                "window": {
-                    "type": "integer",
-                    "description": "The timeframe to consider when calculating the SMA"
-                }
-            },
-            "required": ["ticker", "window"]
+                "required": ["ticker"]
+            }
         }
     },
     {
-        "name": "calculate_EMA",
-        "description": "Calculate the exponential moving average for a given stock ticker and a window",
-        "parameters": {
-            "type": "object",
-            "property": {
-                "ticker": {
-                    "type": "string",
-                    "description": "The stock ticker symbol for a company (for example APPL for Apple)"
+        "type": "function",
+        "function": {
+            "name": "calculate_SMA",
+            "description": "Calculate the simple moving average for a given stock ticker and a window",
+            "parameters": {
+                "type": "object",
+                "property": {
+                    "ticker": {
+                        "type": "string",
+                        "description": "The stock ticker symbol for a company (for example APPL for Apple)"
+                    },
+                    "window": {
+                        "type": "integer",
+                        "description": "The timeframe to consider when calculating the SMA"
+                    }
                 },
-                "window": {
-                    "type": "integer",
-                    "description": "The timeframe to consider when calculating the SMA"
-                }
-            },
-            "required": ["ticker", "window"]
+                "required": ["ticker", "window"]
+            }
         }
     },
     {
-        "name": "calculate_RSI",
-        "description": "Calculate the RSI for a given stock ticker",
-        "parameters": {
-            "type": "object",
-            "property": {
-                "ticker": {
-                    "type": "string",
-                    "description": "The stock ticker symbol for a company (for example APPL for Apple)"
-                }
-            },
-            "required": ["ticker"]
+        "type": "function",
+        "function": {
+            "name": "calculate_EMA",
+            "description": "Calculate the exponential moving average for a given stock ticker and a window",
+            "parameters": {
+                "type": "object",
+                "property": {
+                    "ticker": {
+                        "type": "string",
+                        "description": "The stock ticker symbol for a company (for example APPL for Apple)"
+                    },
+                    "window": {
+                        "type": "integer",
+                        "description": "The timeframe to consider when calculating the SMA"
+                    }
+                },
+                "required": ["ticker", "window"]
+            }
         }
     },
     {
-        "name": "calculate_MACD",
-        "description": "Calculate the MACD for a given stock ticker",
-        "parameters": {
-            "type": "object",
-            "property": {
-                "ticker": {
-                    "type": "string",
-                    "description": "The stock ticker symbol for a company (for example APPL for Apple)"
-                }
-            },
-            "required": ["ticker"]
+        "type": "function",
+        "function": {
+                "name": "calculate_RSI",
+            "description": "Calculate the RSI for a given stock ticker",
+            "parameters": {
+                "type": "object",
+                "property": {
+                    "ticker": {
+                        "type": "string",
+                        "description": "The stock ticker symbol for a company (for example APPL for Apple)"
+                    }
+                },
+                "required": ["ticker"]
+            }
         }
     },
-{
-        "name": "plot_stock_price",
-        "description": "Plot the stock price for the last year given the ticker symbol of a company.",
-        "parameters": {
-            "type": "object",
-            "property": {
-                "ticker": {
-                    "type": "string",
-                    "description": "The stock ticker symbol for a company (for example APPL for Apple)"
-                }
-            },
-            "required": ["ticker"]
+    {
+        "type": "function",
+        "function": {
+            "name": "calculate_MACD",
+            "description": "Calculate the MACD for a given stock ticker",
+            "parameters": {
+                "type": "object",
+                "property": {
+                    "ticker": {
+                        "type": "string",
+                        "description": "The stock ticker symbol for a company (for example APPL for Apple)"
+                    }
+                },
+                "required": ["ticker"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "plot_stock_price",
+            "description": "Plot the stock price for the last year given the ticker symbol of a company.",
+            "parameters": {
+                "type": "object",
+                "property": {
+                    "ticker": {
+                        "type": "string",
+                        "description": "The stock ticker symbol for a company (for example APPL for Apple)"
+                    }
+                },
+                "required": ["ticker"]
+            }
         }
     },
 ]
@@ -177,15 +195,16 @@ if user_input:
         response = client.chat.completions.create(
             model='qwen2.5:7b',
             messages=st.session_state["messages"],
-            functions=functions,
-            function_call="auto"
+            tools=tools,
+            tool_choice="auto"
         )
 
         response_message = response.choices[0].message
 
-        if response_message.function_call:
-            function_name = response_message.function_call.name
-            function_args = json.loads(response_message.function_call.arguments)
+        if response_message.tool_calls:
+            tool_id = response_message.tool_calls[0].id
+            function_name = response_message.tool_calls[0].function.name
+            function_args = json.loads(response_message.tool_calls[0].function.arguments)
             if function_name in ["get_stock_price", "calculate_RSI", 'calculate_MACD', 'plot_stock_price']:
                 args_dict = {'ticker': function_args.get('ticker')}
             elif function_name in ["calculate_SMA", "calculate_EMA"]:
@@ -206,8 +225,8 @@ if user_input:
                 })
 
                 st.session_state['messages'].append({
-                    "role": "function",
-                    "name": function_name,
+                    "tool_call_id": tool_id,
+                    "role": "tool",
                     "content": function_response
                 })
                 

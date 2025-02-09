@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from openai import OpenAI
 from dotenv import load_dotenv
 import os
+import json
 
 def get_stock_price(ticker: str):
     return str(yf.Ticker(ticker).history(period='1y').iloc[-1].Close)
@@ -48,97 +49,115 @@ def plot_stock_price(ticker):
     plt.savefig('stock.png')
     plt.close()
 
-functions = [
+tools = [
     {
-        "name": "get_stock_price",
-        "description": "Gets the latest stock price given the ticker symbol of a company.",
-        "parameters": {
-            "type": "object",
-            "property": {
-                "ticker": {
-                    "type": "string",
-                    "description": "The stock ticker symbol for a company (for example APPL for Apple)"
-                }
-            },
-            "required": ["ticker"]
-        }
-    },
-    {
-        "name": "calculate_SMA",
-        "description": "Calculate the simple moving average for a given stock ticker and a window",
-        "parameters": {
-            "type": "object",
-            "property": {
-                "ticker": {
-                    "type": "string",
-                    "description": "The stock ticker symbol for a company (for example APPL for Apple)"
+        "type": "function",
+        "function": {
+            "name": "get_stock_price",
+            "description": "Gets the latest stock price given the ticker symbol of a company.",
+            "parameters": {
+                "type": "object",
+                "property": {
+                    "ticker": {
+                        "type": "string",
+                        "description": "The stock ticker symbol for a company (for example APPL for Apple)"
+                    }
                 },
-                "window": {
-                    "type": "integer",
-                    "description": "The timeframe to consider when calculating the SMA"
-                }
-            },
-            "required": ["ticker", "window"]
+                "required": ["ticker"]
+            }
         }
     },
     {
-        "name": "calculate_EMA",
-        "description": "Calculate the exponential moving average for a given stock ticker and a window",
-        "parameters": {
-            "type": "object",
-            "property": {
-                "ticker": {
-                    "type": "string",
-                    "description": "The stock ticker symbol for a company (for example APPL for Apple)"
+        "type": "function",
+        "function": {
+            "name": "calculate_SMA",
+            "description": "Calculate the simple moving average for a given stock ticker and a window",
+            "parameters": {
+                "type": "object",
+                "property": {
+                    "ticker": {
+                        "type": "string",
+                        "description": "The stock ticker symbol for a company (for example APPL for Apple)"
+                    },
+                    "window": {
+                        "type": "integer",
+                        "description": "The timeframe to consider when calculating the SMA"
+                    }
                 },
-                "window": {
-                    "type": "integer",
-                    "description": "The timeframe to consider when calculating the SMA"
-                }
-            },
-            "required": ["ticker", "window"]
+                "required": ["ticker", "window"]
+            }
         }
     },
     {
-        "name": "calculate_RSI",
-        "description": "Calculate the RSI for a given stock ticker",
-        "parameters": {
-            "type": "object",
-            "property": {
-                "ticker": {
-                    "type": "string",
-                    "description": "The stock ticker symbol for a company (for example APPL for Apple)"
-                }
-            },
-            "required": ["ticker"]
+        "type": "function",
+        "function": {
+            "name": "calculate_EMA",
+            "description": "Calculate the exponential moving average for a given stock ticker and a window",
+            "parameters": {
+                "type": "object",
+                "property": {
+                    "ticker": {
+                        "type": "string",
+                        "description": "The stock ticker symbol for a company (for example APPL for Apple)"
+                    },
+                    "window": {
+                        "type": "integer",
+                        "description": "The timeframe to consider when calculating the SMA"
+                    }
+                },
+                "required": ["ticker", "window"]
+            }
         }
     },
     {
-        "name": "calculate_MACD",
-        "description": "Calculate the MACD for a given stock ticker",
-        "parameters": {
-            "type": "object",
-            "property": {
-                "ticker": {
-                    "type": "string",
-                    "description": "The stock ticker symbol for a company (for example APPL for Apple)"
-                }
-            },
-            "required": ["ticker"]
+        "type": "function",
+        "function": {
+                "name": "calculate_RSI",
+            "description": "Calculate the RSI for a given stock ticker",
+            "parameters": {
+                "type": "object",
+                "property": {
+                    "ticker": {
+                        "type": "string",
+                        "description": "The stock ticker symbol for a company (for example APPL for Apple)"
+                    }
+                },
+                "required": ["ticker"]
+            }
         }
     },
-{
-        "name": "plot_stock_price",
-        "description": "Plot the stock price for the last year given the ticker symbol of a company.",
-        "parameters": {
-            "type": "object",
-            "property": {
-                "ticker": {
-                    "type": "string",
-                    "description": "The stock ticker symbol for a company (for example APPL for Apple)"
-                }
-            },
-            "required": ["ticker"]
+    {
+        "type": "function",
+        "function": {
+            "name": "calculate_MACD",
+            "description": "Calculate the MACD for a given stock ticker",
+            "parameters": {
+                "type": "object",
+                "property": {
+                    "ticker": {
+                        "type": "string",
+                        "description": "The stock ticker symbol for a company (for example APPL for Apple)"
+                    }
+                },
+                "required": ["ticker"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "plot_stock_price",
+            "description": "Plot the stock price for the last year given the ticker symbol of a company.",
+            "parameters": {
+                "type": "object",
+                "property": {
+                    "ticker": {
+                        "type": "string",
+                        "description": "The stock ticker symbol for a company (for example APPL for Apple)"
+                    }
+                },
+                "required": ["ticker"]
+            }
         }
     },
 ]
@@ -165,60 +184,34 @@ try:
         messages=[
             {"role": "user", "content": "What is the stock price of Apple in 2020"}
         ],
-        functions=functions,
-        function_call="auto"
+        tools=tools,
+        tool_choice="auto"
     )
-
-    print("processed...")
 
     response_message = response.choices[0].message
 
-    print(response_message.content)
+    if response_message.tool_calls:
+        function_name = response_message.tool_calls[0].function.name
+        function_args = json.loads(response_message.tool_calls[0].function.arguments)
+        if function_name in ["get_stock_price", "calculate_RSI", 'calculate_MACD', 'plot_stock_price']:
+            args_dict = {'ticker': function_args.get('ticker')}
+        elif function_name in ["calculate_SMA", "calculate_EMA"]:
+            args_dict = {
+                'ticker': function_args.get('ticker'),
+                'window': function_args.get('window')
+            }
 
-    # if response_message.function_call:
-    #     function_name = response_message.function_call.name
-    #     function_args = json.loads(response_message.function_call.arguments)
-    #     if function_name in ["get_stock_price", "calculate_RSI", 'calculate_MACD', 'plot_stock_price']:
-    #         args_dict = {'ticker': function_args.get('ticker')}
-    #     elif function_name in ["calculate_SMA", "calculate_EMA"]:
-    #         args_dict = {
-    #             'ticker': function_args.get('ticker'),
-    #             'window': function_args.get('window')
-    #         }
-
-    #     function_to_call = available_functions[function_name]
-    #     function_response = function_to_call(**args_dict)
-
-    #     if function_name == 'plot_stock_price':
-    #         st.image("stock.png")
-    #     else:
-    #         st.session_state['messages'].append({
-    #             "role": "assistant",
-    #             "content": response_message.content
-    #         })
-
-    #         st.session_state['messages'].append({
-    #             "role": "function",
-    #             "name": function_name,
-    #             "content": function_response
-    #         })
+        function_to_call = available_functions[function_name]
+        function_response = function_to_call(**args_dict)
             
-    #         second_response = client.chat.completions.create(
-    #             model='qwen2.5:7b',
-    #             messages=st.session_state["messages"]
-    #         )
+        second_response = client.chat.completions.create(
+            model='qwen2.5:7b',
+            messages=[
+                {"role": "user", "content": f"Use this info {function_response}, reply What is the stock price of Apple in 2020"}
+            ],
+        )
 
-    #         st.text(second_response.choices[0].message.content)
+        print(second_response.choices[0].message.content)
 
-    #         st.session_state['messages'].append({
-    #             "role": "assistant",
-    #             "content": second_response.choices[0].message.content
-    #         })
-    # else:
-    #     st.text(response_message.content)
-    #     st.session_state["messages"].append({
-    #         "role": "assistant",
-    #         "content": response_message.content
-    #     })
 except Exception as e:
     print(e)
