@@ -1,4 +1,3 @@
-import pandas as pd
 from services.stock_data import StockDataFetcher
 
 class StockAnalyzer:

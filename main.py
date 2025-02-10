@@ -47,7 +47,7 @@ def plot_stock_price(ticker):
     plt.xlabel('Date')
     plt.ylabel('Stock Price ($)')
     plt.grid(True)
-    plt.savefig('stock.png')
+    plt.savefig('assets/stock.png')
     plt.close()
 
 tools = [
@@ -217,7 +217,7 @@ if user_input:
             function_response = function_to_call(**args_dict)
 
             if function_name == 'plot_stock_price':
-                st.image("stock.png")
+                st.image("assets/stock.png")
             else:
                 st.session_state['messages'].append({
                     "role": "assistant",
