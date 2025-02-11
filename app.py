@@ -32,7 +32,7 @@ def process_user_input(client, user_input, tools):
 
         # Get response from OpenAI API
         response = client.chat.completions.create(
-            model="qwen2.5:7b",
+            model=st.session_state["llm_model"],
             messages=st.session_state["messages"],
             tools=tools.mapped_functions(),
             tool_choice="auto",
@@ -71,7 +71,7 @@ def handle_tool_call(response_message, tools):
                     st.image("assets/stock.png")
                 else:
                     append_tool_response(tool_call.id, function_name, function_response)
-                    logging.info(f"Function response: {function_response}")                    
+                    logging.info(f"Function response: {function_response}")
                     
                     # Display assistant response in chat message container
                     with st.chat_message("assistant"):
@@ -97,7 +97,7 @@ def append_tool_response(tool_id, function_name, function_response):
 def generate_follow_up_response():
     """Generates a follow-up response after executing a function."""
     follow_up_response = client.chat.completions.create(
-        model="qwen2.5:7b",
+        model=st.session_state["llm_model"],
         messages=st.session_state["messages"],
         stream=True, # Streaming enabled
     )
@@ -121,7 +121,7 @@ if __name__ == '__main__':
     st.title("📈 Stock Analysis Assistant")
 
     # List of models
-    models = ["qwen2.5:7b"]
+    models = ["mistral:7b"]
 
     # Create a select box for the models
     st.session_state["llm_model"] = st.sidebar.selectbox("Select OpenAI model", models, index=0)
