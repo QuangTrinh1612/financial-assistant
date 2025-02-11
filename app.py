@@ -121,7 +121,7 @@ if __name__ == '__main__':
     st.title("📈 Stock Analysis Assistant")
 
     # List of models
-    models = ["mistral:7b"]
+    models = ["qwen2.5:14b", "mistral:7b"]
 
     # Create a select box for the models
     st.session_state["llm_model"] = st.sidebar.selectbox("Select OpenAI model", models, index=0)
