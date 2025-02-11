@@ -45,7 +45,7 @@ class FunctionsRegistry:
                             method = getattr(cls, method_name)
                             if callable(method) and hasattr(method, 'schema'):
                                 # Store bound method (class reference included)
-                                self.registry[f"{class_name}.{method_name}"] = (cls, method)
+                                self.registry[f"{class_name}.{method_name}"] = method
                                 self.schema_registry[f"{class_name}.{method_name}"] = method.schema
 
     def resolve_function(self, function_name: str, arguments_json: Optional[str] = None):

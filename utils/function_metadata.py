@@ -36,7 +36,6 @@ def python_type_to_json_type(py_type):
 
 def function_schema(name: str, description: str, required_params: List[str]):
     def decorator_function(func: Callable) -> Callable:
-
         sig = signature(func)
 
         if not all(param in sig.parameters for param in required_params):
@@ -46,24 +45,36 @@ def function_schema(name: str, description: str, required_params: List[str]):
         def wrapper(*args, **kwargs):
             return func(*args, **kwargs)
 
+        # Detect if function belongs to a class (i.e., first parameter is 'cls' or 'self')
+        class_name = None
+        params_list = list(sig.parameters.keys())
+        if params_list and params_list[0] in {"cls", "self"}:
+            # Extract the class name from the function's qualified name
+            if "." in func.__qualname__:
+                class_name = func.__qualname__.split(".")[0]
+
+        # Construct full function name: ClassName.MethodName (if applicable)
+        full_function_name = f"{class_name}.{name}" if class_name else name
+
         param_descriptions = parse_docstring(func)
 
         serialized_params = {
             param_name: {
                 "type": python_type_to_json_type(param.annotation),
-                "description": param_descriptions.get(param_name, "No description")
+                "description": param_descriptions.get(param_name, "No description"),
             }
             for param_name, param in sig.parameters.items() if param_name in required_params
         }
 
         wrapper.schema = {
-            "name": name,
+            "name": full_function_name,  # Updated to include class name
             "description": description,
             "parameters": {
                 "type": "object",
                 "properties": serialized_params,
-                "required": required_params
+                "required": required_params,
             }
         }
         return wrapper
+
     return decorator_function
