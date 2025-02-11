@@ -3,7 +3,7 @@ import streamlit as st
 import json
 import logging
 
-from config import get_config
+from config.config import get_config
 from utils.function_registry import FunctionsRegistry
 
 # Load configuration and available functions
@@ -54,6 +54,8 @@ def handle_tool_call(response_message, tools):
         function_name = tool_call.function.name
         if function_name in function_map:
             function_args = json.loads(tool_call.function.arguments)
+
+            logging.info(f"Calling function [{function_name}] with arguments as {function_args}")
 
             try:
                 function_response = function_map[function_name](

@@ -22,24 +22,38 @@ def parse_docstring(func: Callable) -> Dict[str, str]:
 
     return param_descriptions
 
+def python_type_to_json_type(py_type):
+    """Maps Python types to JSON schema types."""
+    type_mapping = {
+        int: "integer",
+        float: "number",
+        str: "string",
+        bool: "boolean",
+        list: "array",
+        dict: "object",
+    }
+    return type_mapping.get(py_type, "string")  # Default to string if unknown
+
 def function_schema(name: str, description: str, required_params: List[str]):
     def decorator_function(func: Callable) -> Callable:
-        if not all(param in signature(func).parameters for param in required_params):
+
+        sig = signature(func)
+
+        if not all(param in sig.parameters for param in required_params):
             raise ValueError(f"Missing required parameters in {func.__name__}")
 
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             return func(*args, **kwargs)
 
-        params = signature(func).parameters
         param_descriptions = parse_docstring(func)
 
         serialized_params = {
             param_name: {
-                "type": "string",
+                "type": python_type_to_json_type(param.annotation),
                 "description": param_descriptions.get(param_name, "No description")
             }
-            for param_name in required_params
+            for param_name, param in sig.parameters.items() if param_name in required_params
         }
 
         wrapper.schema = {
