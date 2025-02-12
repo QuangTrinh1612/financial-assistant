@@ -13,7 +13,7 @@ class StockDataFetcher:
     """Handles stock price and technical indicator retrieval."""
 
     @staticmethod
-    @tool(parse_docstring=True)
+    @tool(parse_docstring=True, name_or_callable="StockDataFetcher.get_stock_prices")
     def get_stock_prices(ticker: str) -> Union[Dict, str]:
         """Fetches historical stock price data and technical indicators for a given ticker.
         
