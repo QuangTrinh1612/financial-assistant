@@ -1,5 +1,5 @@
 # Personal Testing Purpose
-smoke_test.py
+smoke_test*.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

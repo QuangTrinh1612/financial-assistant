@@ -3,11 +3,8 @@ import json
 import logging
 
 from openai import OpenAI
-from config.config import get_config
+from config.config import *
 from utils.function_registry import FunctionsRegistry
-
-# Load configuration and available functions
-config = get_config()
 
 # Initialize session state
 if "messages" not in st.session_state:
@@ -127,8 +124,8 @@ if __name__ == '__main__':
     st.session_state["llm_model"] = st.sidebar.selectbox("Select OpenAI model", models, index=0)
 
     client = OpenAI(
-        base_url=config.get('base_url'),
-        api_key=config.get('api_key')
+        base_url=base_url,
+        api_key=api_key
     )
 
     tools = FunctionsRegistry()
