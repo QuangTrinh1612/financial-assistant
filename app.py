@@ -3,7 +3,7 @@ import json
 import logging
 
 from openai import OpenAI
-from config.config import *
+from config.financial_analysis_config import *
 from utils.function_registry import FunctionsRegistry
 
 # Initialize session state
