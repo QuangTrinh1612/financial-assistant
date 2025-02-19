@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 base_url = os.getenv("BASE_URL")
+ollama_base_url = os.getenv("OLLAMA_BASE_URL")
 api_key = os.getenv("API_KEY")
 
 FUNDAMENTAL_ANALYST_PROMPT = """
